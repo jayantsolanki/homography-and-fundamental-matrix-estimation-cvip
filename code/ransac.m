@@ -1,12 +1,20 @@
-function [H, inliers, residual_error] = ransac(INPUTS, OUTPUTS, iterations, im1, im2)
-	%% 
-	%% 
-	%% 
+%ransac.m
+function [H, inliers, residual_error] = ransac(INPUTS, OUTPUTS, iterations)
+% Arguments:   
+%            INPUTS      - keypoint features corrdinates of the first image
+%            OUTPUTS     - keypoint features corrdinates of the seond image
+%            iterations  - number of times ransac has to run
+%
+% Returns:
+%            H    			   - optimum Homography matrix calculated
+%            inliers    	   - returns the inliers indices found in the keypoint features
+%            residual_error    - average error found in the inliers
 	optimum_inliers_count = 0;
+	error_threshold = 0.9;
 	Matches = size(INPUTS,1);%get the totals match size
 	for i =1:iterations
 
-		index = randperm(Matches,4) %randomly taking 4 pairs of matches
+		index = randperm(Matches,4); %randomly taking 4 pairs of matches
 		coordinates1 = INPUTS(index,:);
 		coordinates2 = OUTPUTS(index,:);
 		% A = [coordinates1(1,1), coordinates1(1,2), 1, 0, 0, 0, -1*coordinates1(1,1)*coordinates2(1,1), -1*coordinates1(1,2)*coordinates2(1,1); coordinates1(2,1), coordinates1(2,2), 1, 0, 0, 0, -1*coordinates1(2,1)*coordinates2(2,1), -1*coordinates1(2,2)*coordinates2(2,1); coordinates1(3,1), coordinates1(3,2), 1, 0, 0, 0, -1*coordinates1(3,1)*coordinates2(3,1), -1*coordinates1(3,2)*coordinates2(3,1); coordinates1(4,1), coordinates1(4,2), 1, 0, 0, 0, -1*coordinates1(4,1)*coordinates2(4,1), -1*coordinates1(4,2)*coordinates2(4,1); 0, 0, 0, coordinates1(1,1), coordinates1(1,2), 1, -1*coordinates1(1,1)*coordinates2(1,2), -1*coordinates1(1,2)*coordinates2(1,2); 0, 0, 0, coordinates1(2,1), coordinates1(2,2), 1, -1*coordinates1(2,1)*coordinates2(2,2), -1*coordinates1(2,2)*coordinates2(2,2); 0, 0, 0, coordinates1(3,1), coordinates1(3,2), 1, -1*coordinates1(1,1)*coordinates2(3,2), -1*coordinates1(3,2)*coordinates2(3,2); 0, 0, 0, coordinates1(4,1), coordinates1(4,2), 1, -1*coordinates1(4,1)*coordinates2(4,2), -1*coordinates1(4,2)*coordinates2(4,2);
@@ -47,7 +55,7 @@ function [H, inliers, residual_error] = ransac(INPUTS, OUTPUTS, iterations, im1,
 	    inputs_trans = tempInputs;
 	    OUTPUTS;
 	    error = sum((inputs_trans-OUTPUTS).^2,2);
-	    inliers_temp = find(error<0.3)%getting the indices of those coordinates which have low error difference with the acgual output
+	    inliers_temp = find(error<error_threshold);%getting the indices of those coordinates which have low error difference with the acgual output
 	    inliers_temp_count = length(inliers_temp);
 	    if (inliers_temp_count > optimum_inliers_count)
 	    	optimum_H=H;
@@ -56,14 +64,8 @@ function [H, inliers, residual_error] = ransac(INPUTS, OUTPUTS, iterations, im1,
 	    	avg_residual_error = mean(error(optimum_inliers));
 	    end
 	end
-	% tform = maketform('projective',H');
-	% homoTrans = maketform('projective', H)
-	% img1Trans = imtransform(im1, tform, 'nearest');
-	% figure, imshow(img1Trans);
-	% pts3 = pts3(1:2,:)./repmat(pts3(3,:),2,1);
-	% d = sum((coordinates2-pts3).^2,1)
-	H = optimum_H
+	H = optimum_H;
 	inliers = optimum_inliers;
 	optimum_inliers_count
-	residual_error = avg_residual_error
+	residual_error = avg_residual_error;
 	Matches

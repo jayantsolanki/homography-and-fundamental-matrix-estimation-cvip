@@ -10,8 +10,8 @@ function [keypoint, coordinates] = keypoints(im, neighbourhood_size, r, c)
 	R=[];
 	C=[];
 	% size(local_features)
+	div = (neighbourhood_size-1)/2;
 	for k =1:feature_count
-		div = (neighbourhood_size-1)/2;
 		i = r(k,1);
 		j = c(k,1);
 		if (i-div>0 && j-div > 0 && i+div < h && j+div < w ) %% bypassing feature points near the vicinity of the borders of the picture

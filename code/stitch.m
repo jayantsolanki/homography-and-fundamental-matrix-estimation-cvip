@@ -1,11 +1,16 @@
 %stitch.m
 %this code is used for performing image stitching of two images
-function stitch(im1, im2, thresh)
-	%% im1 is the first image
-	%% im2 is the second image
-	%% thresh is the threshold for putative matches
+function [results] = stitch(im1, im2)
+% Arguments:   
+%            im1     - image1 to be processed.
+%            im2     - image2 to be processed.
+%
+% Returns:
+%            result    - outputs the stiched images
+
 	neighbourhood_size = 9;%definging the neighbourhood size
-	if nargin < 3 %for debugging purpose
+	threshold = 7;
+	if nargin < 2 %for debugging purpose
 	    im1=imread('..\data\part1\uttower\left.jpg');
 		im2=imread('..\data\part1\uttower\right.jpg');
 	end
@@ -39,7 +44,7 @@ function stitch(im1, im2, thresh)
 	%%%%%%%%%%%%%%%%%%%%%%%%% 3 - finding the euclidean distance between each keypoints of both images%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	n2 = dist2(local_features1, local_features2);
 	size(n2)
-	[N,M] = find((n2<7)); %putative matches found
+	[N,M] = find((n2<threshold)); %putative matches found
 	Matches = size(N,1);
 	% index = randperm(Matches,20) %randomly taking 20 putative matches
 	% N = N(index, 1)
@@ -73,7 +78,7 @@ function stitch(im1, im2, thresh)
 	% plot(coordinates1(:,2),coordinates1(:,1),'ys'), title('corners detected');
 	% figure, imagesc(im2), axis image, colormap(gray), hold on
 	% plot(coordinates2(:,2),coordinates2(:,1),'ys'), title('corners detected');
-	[H, inliers, residual_error] = ransac(coordinates1, coordinates2, 1000, im1, im2)
+	[H, inliers, residual_error] = ransac(coordinates1, coordinates2, 1000);
 
 	stackedImage = cat(2, im1, im2); % Places the two images side by side, %courtesy stackoverflow.com
 	figure; clf; imshow(stackedImage); hold on;
@@ -82,30 +87,30 @@ function stitch(im1, im2, thresh)
 	plot(coordinates2(inliers,2)+w,coordinates2(inliers, 1),'oc');
 	% show displacements
 	% line([coordinates1(:,1); coordinates2(:,1)],[coordinates1(:,2); coordinates2(:,2)],'color','y');
-	coordinates1 = coordinates1(inliers,:);
-	coordinates2 = coordinates2(inliers,:);
-	for i = 1 : size(coordinates2)
-		line([coordinates1(i, 2) (coordinates2(i, 2)+w)], [coordinates1(i, 1) coordinates2(i, 1)], 'Color', 'yellow');
-
-		end
+	coordinates11 = coordinates1(inliers,:);
+	coordinates22 = coordinates2(inliers,:);
+	for i = 1 : size(coordinates22)
+		line([coordinates11(i, 2) (coordinates22(i, 2)+w)], [coordinates11(i, 1) coordinates22(i, 1)], 'Color', 'yellow');
+	end
 	% showMatchedFeatures(im1,im2,coordinates1,coordinates2) %%using computer toolbox, debugging
 	truesize;
-	% tform = maketform('projective',H');
-	% % homoTrans = maketform('projective', H)
-	% img1Trans = imtransform(im2, tform, 'nearest');
-	% figure, imshow(img1Trans);
-	[~, xdata, ydata] = imtransform(im1,maketform('projective',H'));
+	result = panO(im1, im2, H, inliers, coordinates1, coordinates2);
+	% figure, imshow(result);
+	% result = 0;
+	% size(result)
 
-    xdata_out=[min(1,xdata(1)) max(size(im1,2), xdata(2))];
-    ydata_out=[min(1,ydata(1)) max(size(im1,1), ydata(2))];
+	% [~, xdata, ydata] = imtransform(im1,maketform('projective',inv(H)'));
 
-    result1 = imtransform(im1, maketform('projective',H'),'XData',xdata_out,'YData',ydata_out);
-    result2 = imtransform(im1, maketform('affine',eye(3)),'XData',xdata_out,'YData',ydata_out);
-    result = result1 + result2;
-    overlap = (result1 > 0.0) & (result2 > 0.0);
-    result_avg = (result1/2 + result2/2);
+ %    xdata_out=[min(1,xdata(1)) max(size(im1,2), xdata(2))];
+ %    ydata_out=[min(1,ydata(1)) max(size(im1,1), ydata(2))];
+
+ %    result1 = imtransform(im1, maketform('projective',inv(H)'),'XData',xdata_out,'YData',ydata_out);
+ %    result2 = imtransform(im2, maketform('affine',eye(3)),'XData',xdata_out,'YData',ydata_out);
+ %    result = result1 + result2;
+ %    overlap = (result1 > 0.0) & (result2 > 0.0);
+ %    result_avg = (result1/2 + result2/2);
     
-    result(overlap) = result_avg(overlap);
-    figure; clf; imshow(result);
+ %    result(overlap) = result_avg(overlap);
+ %    figure; clf; imshow(result);
 
 
