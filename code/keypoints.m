@@ -32,5 +32,5 @@ function [keypoint, coordinates] = keypoints(im, neighbourhood_size, r, c)
 	C=C';
 	coordinates = zeros(K, 2);
 	size(coordinates)
-	coordinates(:,2) = C(:,1);
-	coordinates(:,1) = R(:,1);
+	coordinates(:,1) = C(:,1);
+	coordinates(:,2) = R(:,1);

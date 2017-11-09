@@ -1,6 +1,6 @@
 %stitch.m
 %this code is used for performing image stitching of two images
-function [results] = stitch(im1, im2)
+function [H] = stitch(im1, im2)
 % Arguments:   
 %            im1     - image1 to be processed.
 %            im2     - image2 to be processed.
@@ -62,12 +62,12 @@ function [results] = stitch(im1, im2)
 	stackedImage = cat(2, im1, im2); % Places the two images side by side, %courtesy stackoverflow.com
 	figure; clf; imshow(stackedImage); hold on;
 	% show features detected in image 1
-	plot(coordinates1(:,2),coordinates1(:,1),'+m');
-	plot(coordinates2(:,2)+w,coordinates2(:,1),'oc');
+	plot(coordinates1(:,1),coordinates1(:,2),'+m');
+	plot(coordinates2(:,1)+w,coordinates2(:,2),'oc');
 	% show displacements
 	% line([coordinates1(:,1); coordinates2(:,1)],[coordinates1(:,2); coordinates2(:,2)],'color','y');
 	for i = 1 : size(coordinates2)
-		line([coordinates1(i, 2) (coordinates2(i, 2)+w)], [coordinates1(i, 1) coordinates2(i, 1)], 'Color', 'yellow');
+		line([coordinates1(i, 1) (coordinates2(i, 1)+w)], [coordinates1(i, 2) coordinates2(i, 2)], 'Color', 'yellow');
 
 		end
 	% showMatchedFeatures(im1,im2,coordinates1,coordinates2) %%using computer toolbox, debugging
@@ -83,18 +83,19 @@ function [results] = stitch(im1, im2)
 	stackedImage = cat(2, im1, im2); % Places the two images side by side, %courtesy stackoverflow.com
 	figure; clf; imshow(stackedImage); hold on;
 	% show features detected in image 1
-	plot(coordinates1(inliers,2),coordinates1(inliers, 1),'+m');
-	plot(coordinates2(inliers,2)+w,coordinates2(inliers, 1),'oc');
+	plot(coordinates1(inliers,1),coordinates1(inliers, 2),'+m');
+	plot(coordinates2(inliers,1)+w,coordinates2(inliers, 2),'oc');
 	% show displacements
 	% line([coordinates1(:,1); coordinates2(:,1)],[coordinates1(:,2); coordinates2(:,2)],'color','y');
 	coordinates11 = coordinates1(inliers,:);
 	coordinates22 = coordinates2(inliers,:);
 	for i = 1 : size(coordinates22)
-		line([coordinates11(i, 2) (coordinates22(i, 2)+w)], [coordinates11(i, 1) coordinates22(i, 1)], 'Color', 'yellow');
+		line([coordinates11(i, 1) (coordinates22(i, 1)+w)], [coordinates11(i, 2) coordinates22(i, 2)], 'Color', 'yellow');
 	end
 	% showMatchedFeatures(im1,im2,coordinates1,coordinates2) %%using computer toolbox, debugging
 	truesize;
 	result = panO(im1, im2, H, inliers, coordinates1, coordinates2);
+	H
 	% figure, imshow(result);
 	% result = 0;
 	% size(result)

@@ -36,30 +36,21 @@ function [result] = panO(im1, im2, H, inliers, coordinates1, coordinates2)
  %    Xtemp(:,1)=Xtemp(:,1)./Xdash(:,3);
  %    Xtemp(:,2)=Xtemp(:,2)./Xdash(:,3);
  %    Xdash = round(Xtemp)
-
- 	[im11, xdata, ydata] = imtransform(im1,maketform('projective',inv(H')));
- 	[h11, w11] = size(im11)
- 	hh
- 	ww
-xdata
-ydata
+ %referenced from http://www.leet.it/home/giusti/teaching/matlab_sessions/stitching/stitch.html
+ 	[im11, xdata, ydata] = imtransform(im1,maketform('projective',H'));
     xdata_out=[min(1,xdata(1)) max(size(im2,2), xdata(2))]; %width
     ydata_out=[min(1,ydata(1)) max(size(im2,1), ydata(2))]; %depth
-    xoffset = xdata_out(2) - xdata_out(1)
-    yoffset = ydata_out(2) - ydata_out(1)
-xdata_out
-ydata_out
-    result1 = imtransform(im1, maketform('projective',inv(H')),...
+    result1 = imtransform(im1, maketform('projective',H'),...
              'XData',xdata_out,'YData',ydata_out);
     result2 = imtransform(im2, maketform('affine',eye(3)),...
              'XData',xdata_out,'YData',ydata_out);
-    result = result1 + result2;
-    overlap = (result1 > 0.0) & (result2 > 0.0);
-    result_avg = (result1/2 + result2/2);
+    % result = result1 + result2;
+    % overlap = (result1 > 0.0) & (result2 > 0.0);
+    % result_avg = (result1/2 + result2/2);
+    result=max(result1,result2);
     
-    result(overlap) = result_avg(overlap);
+    % result(overlap) = result_avg(overlap);
     figure; imshow(result);
-    size(result1)
 
 
 
