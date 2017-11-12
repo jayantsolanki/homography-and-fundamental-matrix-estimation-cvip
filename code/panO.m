@@ -19,7 +19,7 @@ function [result] = panO(im1, im2, H)
              'XData',xdata_out,'YData',ydata_out);
     % result = result1 + result2;
     % overlap = (result1 > 0.0) & (result2 > 0.0);
-    % result_avg = (result1/2 + result2/2);
+    % result_avg = result1/2 + result2/2);
     result=max(result1,result2);
     
     % result(overlap) = result_avg(overlap);

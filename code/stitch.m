@@ -1,20 +1,24 @@
 %stitch.m
 %this code is used for performing image stitching of two images
-function [result] = stitch(img1, img2, deBug)
+function [result] = stitch(img1, img2, coor, harrisThreshold, deBug)
 % Arguments:   
-%            im1     - image1 to be processed.
-%            im2     - image2 to be processed.
-%            disp    - show debugged images
+%            im1     			- image1 to be processed.
+%            im2     			- image2 to be processed.
+%            coor    			- just obtains inlier coordinates and return, 1 true, 0 for show stiched images
+%            harrisThreshold    - specifying threshold for harris detector
+%            deBug    			- show debugged images
 %
 % Returns:
-%            result    - outputs the stiched images
+%            result    - outputs the stiched images if coor = 0 else outputs the inliers coordinates for both images
 	warning('off','all')
-	neighbourhood_size = 13;%definging the neighbourhood size
-	threshold = 23;
-	if nargin < 3 %for debugging purpose
+	neighbourhood_size = 3;%definging the neighbourhood size
+	threshold = 3;%threshold for the dist2.m output
+	if nargin < 5 %for debugging purpose
 	    img1=imread('..\data\part1\uttower\left.jpg');
 		img2=imread('..\data\part1\uttower\right.jpg');
 		deBug = 0;
+		harrisThreshold = 0.05;
+		coor = 1;
 	end
 	im1=rgb2gray(img1);
 	im2=rgb2gray(img2);
@@ -26,14 +30,14 @@ function [result] = stitch(img1, img2, deBug)
 	% imshow(im2)
 	%%%%%%%%%%%%%%%%%%%%%%%%%% 1 - finding the feature points using harris blob detector%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	disp('1 - Performing Harris corner detector trick.....')
-	[cim,r,c] = harris(im1,2, 0.05, 2, deBug);
+	[cim,r,c] = harris(im1,2, harrisThreshold, 2, deBug);
 	%%%%%%%%%%%%%%%%%%%%%%%% 2 - finding and storing the neighbourhood pixels for each feature points%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	[local_features1, coordinates1] = keypoints(im1, neighbourhood_size, r, c);
 	% figure, imagesc(im1), axis image, colormap(gray), hold on
 	% plot(C1,R1,'ys'), title('corners detected');
 	% truesize;
 	%%%%%%%%%%%%%%%%%%%%%%%%%% 1 - finding the feature points using harris blob detector%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	[~,r,c] = harris(im2,2, 0.05, 2, deBug);
+	[~,r,c] = harris(im2,2, harrisThreshold, 2, deBug);
 	%%%%%%%%%%%%%%%%%%%%%%%% 2 - finding and storing the neighbourhood pixels for each feature points%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	[local_features2, coordinates2] = keypoints(im2, neighbourhood_size, r, c);
 	% figure, imagesc(im2), axis image, colormap(gray), hold on
@@ -50,10 +54,10 @@ function [result] = stitch(img1, img2, deBug)
 	% M = M(index, 1) 
 	% 
 	size(coordinates1);
-	coordinates1=coordinates1(N,:);
+	coordinates1=coordinates1(N,:);%STORING THE PUTATIVE MATCHES, x
 	size(coordinates1);
 	% C1=C1(unique(N,'first'), :);
-	coordinates2=coordinates2(M,:);
+	coordinates2=coordinates2(M,:);%STORING THE PUTATIVE MATCHES, Y
 	size(coordinates2);
 	if deBug ==1
 		stackedImage = cat(2, im1, im2); % Places the two images side by side, %courtesy stackoverflow.com
@@ -79,7 +83,7 @@ function [result] = stitch(img1, img2, deBug)
 
 	%%%%%%%%%%%%%%%%%%%%%%%%% 4 - Applying RANSAC to remove outliers and get optimum Homogrpahy Matrix%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	disp('4 - Performing very Simple RANSAC algorithm and plotting the inliers.....')
-	[H, inliers, residual_error] = ransac(coordinates1, coordinates2, 1000);
+	[H, inliers, residual_error] = ransac(coordinates1, coordinates2, 20000);
 	if deBug ==1
 		stackedImage = cat(2, im1, im2); % Places the two images side by side, %courtesy stackoverflow.com
 		figure; clf; imshow(stackedImage); hold on;
@@ -100,12 +104,17 @@ function [result] = stitch(img1, img2, deBug)
 	disp('6 - Some useful data.....')
 	fprintf('Residual Error in inliers: %0.3f \n',residual_error);
 	fprintf('Number of Inliers out of %d Putative pairs: %d \n', length(coordinates1),length(inliers) );
-	if length(inliers) <10 %exit if too many outliers
-		disp('Second image is an outlier')
+	if length(inliers) <4 %exit if too many outliers
+		disp('Second image is an outlier, too few matches')
+		return
+	end
+	if coor == 0
+		result = [];
+		result = [coordinates1(inliers,:) coordinates2(inliers,:)];
 		return
 	end
 	% showMatchedFeatures(im1,im2,coordinates1,coordinates2) %%using computer toolbox, debugging
-	%%%%%%%%%%%%%%%%%%%%%%%%% 5 - Perfomring image stiching ausing the Homography matrix H%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%% 5 - Perfomring image stiching using the Homography matrix H%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	disp('7 - Finally showing the stiched images')
 	result = panO(img1, img2, H);
 	% figure;
@@ -113,7 +122,7 @@ function [result] = stitch(img1, img2, deBug)
 	% imshow(result);
 	% hold on;
 	% title('Stitched Images');
-	H;
+	H
 	disp('Hurray!!!!!')
 
 

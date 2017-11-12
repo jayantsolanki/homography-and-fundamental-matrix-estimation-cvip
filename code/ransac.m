@@ -11,7 +11,7 @@ function [H, inliers, residual_error] = ransac(INPUTS, OUTPUTS, iterations)
 %            residual_error    - average error found in the inliers
 	warning('off','all')
 	optimum_inliers_count = 0;
-	error_threshold = 0.9;
+	error_threshold = 25;
 	Matches = size(INPUTS,1);%get the totals match size
 	for i =1:iterations
 
