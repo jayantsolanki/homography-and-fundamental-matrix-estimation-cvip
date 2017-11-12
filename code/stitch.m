@@ -11,8 +11,10 @@ function [result] = stitch(img1, img2, coor, harrisThreshold, deBug)
 % Returns:
 %            result    - outputs the stiched images if coor = 0 else outputs the inliers coordinates for both images
 	warning('off','all')
-	neighbourhood_size = 3;%definging the neighbourhood size
-	threshold = 3;%threshold for the dist2.m output
+	neighbourhood_size = 5;%definging the neighbourhood size //optimum
+	threshold = 3;%threshold for the dist2.m output, optimum
+	% neighbourhood_size = 7;%definging the neighbourhood size
+	% threshold = 3;%threshold for the dist2.m output
 	if nargin < 5 %for debugging purpose
 	    img1=imread('..\data\part1\uttower\left.jpg');
 		img2=imread('..\data\part1\uttower\right.jpg');
