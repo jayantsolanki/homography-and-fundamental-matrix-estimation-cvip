@@ -36,6 +36,31 @@ pause;
 
 % first, fit fundamental matrix to the matches
 F = fit_fundamental(matches); % this is a function that i had written
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Epipolar lines on 1st image%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+L = (F' * [matches(:,3:4) ones(N,1)]')'; % transform points from 
+% the first image to get epipolar lines in the second image
+
+% find points on epipolar lines L closest to matches(:,3:4)
+L = L ./ repmat(sqrt(L(:,1).^2 + L(:,2).^2), 1, 3); % rescale the line
+pt_line_dist = sum(L .* [matches(:,1:2) ones(N,1)],2);
+closest_pt = matches(:,1:2) - L(:,1:2) .* repmat(pt_line_dist, 1, 2);
+%finding the residual distance
+error = sum((closest_pt-matches(:,1:2)).^2,2);
+fprintf('In first image, Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
+
+% find endpoints of segment on epipolar line (for display purposes)
+pt1 = closest_pt - [L(:,2) -L(:,1)] * 10; % offset from the closest point is 10 pixels
+pt2 = closest_pt + [L(:,2) -L(:,1)] * 10;
+
+% display points and segments of corresponding epipolar lines
+figure;
+clf;
+imshow(I1); hold on;
+plot(matches(:,1), matches(:,2), '+r');
+line([matches(:,1) closest_pt(:,1)]', [matches(:,2) closest_pt(:,2)]', 'Color', 'r');
+line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
+title('Plotting the epipolar lines on the putative matches in First Image');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Epipolar Lines on second image#########################################
 L = (F * [matches(:,1:2) ones(N,1)]')'; % transform points from 
 % the first image to get epipolar lines in the second image
 
@@ -45,18 +70,20 @@ pt_line_dist = sum(L .* [matches(:,3:4) ones(N,1)],2);
 closest_pt = matches(:,3:4) - L(:,1:2) .* repmat(pt_line_dist, 1, 2);
 %finding the residual distance
 error = sum((closest_pt-matches(:,3:4)).^2,2);
-fprintf('Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
+fprintf('In second image, Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
 
 % find endpoints of segment on epipolar line (for display purposes)
 pt1 = closest_pt - [L(:,2) -L(:,1)] * 10; % offset from the closest point is 10 pixels
 pt2 = closest_pt + [L(:,2) -L(:,1)] * 10;
 
 % display points and segments of corresponding epipolar lines
+figure;
 clf;
 imshow(I2); hold on;
 plot(matches(:,3), matches(:,4), '+r');
 line([matches(:,3) closest_pt(:,1)]', [matches(:,4) closest_pt(:,2)]', 'Color', 'r');
 line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
+title('Plotting the epipolar lines on the putative matches in Second Image');
 % return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Start of Part 2-3 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Execution paused, press escape to close all the exisiting image figure and continue execution')
@@ -78,6 +105,30 @@ N = size(matches,1);
 % pause;
 
 F = fit_fundamental(matches); % this is a function that i had written
+L = (F' * [matches(:,3:4) ones(N,1)]')'; % transform points from 
+% the first image to get epipolar lines in the second image
+
+% find points on epipolar lines L closest to matches(:,3:4)
+L = L ./ repmat(sqrt(L(:,1).^2 + L(:,2).^2), 1, 3); % rescale the line
+pt_line_dist = sum(L .* [matches(:,1:2) ones(N,1)],2);
+closest_pt = matches(:,1:2) - L(:,1:2) .* repmat(pt_line_dist, 1, 2);
+%finding the residual distance
+error = sum((closest_pt-matches(:,1:2)).^2,2);
+fprintf('In first image, Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
+
+% find endpoints of segment on epipolar line (for display purposes)
+pt1 = closest_pt - [L(:,2) -L(:,1)] * 10; % offset from the closest point is 10 pixels
+pt2 = closest_pt + [L(:,2) -L(:,1)] * 10;
+
+% display points and segments of corresponding epipolar lines
+figure;
+clf;
+imshow(I1); hold on;
+plot(matches(:,1), matches(:,2), '+r');
+line([matches(:,1) closest_pt(:,1)]', [matches(:,2) closest_pt(:,2)]', 'Color', 'r');
+line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
+title('Plotting the epipolar lines on the putative matches in First Image');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Epipolar Lines on second image#########################################
 L = (F * [matches(:,1:2) ones(N,1)]')'; % transform points from 
 % the first image to get epipolar lines in the second image
 
@@ -87,7 +138,7 @@ pt_line_dist = sum(L .* [matches(:,3:4) ones(N,1)],2);
 closest_pt = matches(:,3:4) - L(:,1:2) .* repmat(pt_line_dist, 1, 2);
 %finding the residual distance
 error = sum((closest_pt-matches(:,3:4)).^2,2);
-fprintf('Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
+fprintf('In second image, Residual distance in pixels is %0.3f \n',mean(error));%printing the residual error
 
 % find endpoints of segment on epipolar line (for display purposes)
 pt1 = closest_pt - [L(:,2) -L(:,1)] * 10; % offset from the closest point is 10 pixels
@@ -100,7 +151,7 @@ imshow(I2); hold on;
 plot(matches(:,3), matches(:,4), '+r');
 line([matches(:,3) closest_pt(:,1)]', [matches(:,4) closest_pt(:,2)]', 'Color', 'r');
 line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
-title('Plotting the epipolar lines on the putative matches');
+title('Plotting the epipolar lines on the putative matches in Second Image');
 disp('Execution paused, press escape to close all the exisiting image figure and continue execution')
 pause;
 close all;%closes all the opened figures
@@ -113,8 +164,9 @@ C1 = P1V(:,end)
 C2 = P2V(:,end)
 matches = load('..\data\part2\house_matches.txt'); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Performing Triangulation%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Z1 = zeros(length(matches),3);
-Z2 = zeros(length(matches),3);
+XY = zeros(length(matches),2);
+Z = zeros(length(matches),3);
+xy__ = zeros(length(matches),2);
 for i=1:length(matches)
 	A = [matches(i,1)*P1(3,:) - P1(1,:);
 	 matches(i,2)*P1(3,:) - P1(2,:);
@@ -122,14 +174,30 @@ for i=1:length(matches)
 	 matches(i,4)*P2(3,:) - P2(2,:);];
 	 [U,D,V] = svd(A);
 	 X = V(:,end);
-	 size(X)
-	 break
-	 % Z1(i,:) =( P1*X)';
-	 % Z2(i,:) = (P2*X)';
+	 tempXY =  X;
+	 tempXY(1,1)=tempXY(1,1)/X(4,1);%normalising the row with the homogneous column, w
+     tempXY(2,1) = tempXY(2,1)/X(4,1);%normalising the column with the homogneous column, w
+     tempXY(3,1)=tempXY(3,1)/X(4,1);%normalising the row with the homogneous column, w
+     X = tempXY;
+     Z(i,:) = X(1:3,1)';
+     % X
+	 % size(X)
+	 % break
+	 % P1\X(1:3,1)
+	 temp1 = (P1*X)';
+	 temp2 = (P2*X)';
+	 temp11 = temp1;
+	 temp22 = temp2;
+	 temp11(1,1) = temp1(1,1)/temp1(1,3);
+	 temp22(1,1) = temp2(1,1)/temp2(1,3);
+	 temp1 = temp11;
+	 temp2 = temp22;
+	 XY(i,:) = temp1(1,1:2);
+	 xy__(i,:) = temp2(1,1:2);
 end
 % size(Z1)
-% plot3(Z1(:,1),Z1(:,2),Z1(:,3));
-% axis equal
+plot3(Z(:,1),Z(:,2),Z(:,3));
+axis equal
 % Z1 = P1*X;
 % Z2 = P2*X;
 
