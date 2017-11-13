@@ -60,7 +60,7 @@ function [F] = fit_fundamental(matches)
     FD(c,c) = 0; %enforcing singularity
     F = FU * FD * FV';%calculated using unnormalised coordinates
     if flag ==1
-	    F = Txy__'*F*TXY
+	    F = Txy__'*F*TXY;
 	    F = F/F(3,3);
 	end
     % F = [-0.0000 -0.0001 0.0177; 0.0001 -0.0000 -0.0181; -0.0117 0.0234 -0.9993]

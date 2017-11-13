@@ -59,7 +59,7 @@ imshow(I1); hold on;
 plot(matches(:,1), matches(:,2), '+r');
 line([matches(:,1) closest_pt(:,1)]', [matches(:,2) closest_pt(:,2)]', 'Color', 'r');
 line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
-title('Plotting the epipolar lines on the putative matches in First Image');
+title('Plotting the epipolar lines on the Ground truths in First Image');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Epipolar Lines on second image#########################################
 L = (F * [matches(:,1:2) ones(N,1)]')'; % transform points from 
 % the first image to get epipolar lines in the second image
@@ -83,7 +83,7 @@ imshow(I2); hold on;
 plot(matches(:,3), matches(:,4), '+r');
 line([matches(:,3) closest_pt(:,1)]', [matches(:,4) closest_pt(:,2)]', 'Color', 'r');
 line([pt1(:,1) pt2(:,1)]', [pt1(:,2) pt2(:,2)]', 'Color', 'g');
-title('Plotting the epipolar lines on the putative matches in Second Image');
+title('Plotting the epipolar lines on the Ground truths in Second Image');
 % return
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Start of Part 2-3 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Execution paused, press escape to close all the exisiting image figure and continue execution')
@@ -156,12 +156,21 @@ disp('Execution paused, press escape to close all the exisiting image figure and
 pause;
 close all;%closes all the opened figures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Start of Part 2-4 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-P1 = load('..\data\part2\house1_camera.txt'); 
-P2 = load('..\data\part2\house2_camera.txt'); 
+P1 = load('..\data\part2\house1_camera.txt'); %camera 1 projection matrix
+P2 = load('..\data\part2\house2_camera.txt'); %camera 2 projection matrix
 [P1U,P1D,P1V] = svd(P1);
 [P2U,P2D,P2V] = svd(P2);
-C1 = P1V(:,end)
-C2 = P2V(:,end)
+C1 = P1V(:,end)';%camera 1 coordinates
+C2 = P2V(:,end)';%camera 2 coordinates
+C1(1,1) = C1(1,1)/C1(1,4);
+C1(1,2) = C1(1,2)/C1(1,4);
+C1(1,3) = C1(1,3)/C1(1,4);
+C1= C1(1,1:3);
+C2(1,1) = C2(1,1)/C2(1,4);
+C2(1,2) = C2(1,2)/C2(1,4);
+C2(1,3) = C2(1,3)/C2(1,4);
+C2= C2(1,1:3);
+
 matches = load('..\data\part2\house_matches.txt'); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Performing Triangulation%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 XY = zeros(length(matches),2);
@@ -178,6 +187,7 @@ for i=1:length(matches)
 	 tempXY(1,1)=tempXY(1,1)/X(4,1);%normalising the row with the homogneous column, w
      tempXY(2,1) = tempXY(2,1)/X(4,1);%normalising the column with the homogneous column, w
      tempXY(3,1)=tempXY(3,1)/X(4,1);%normalising the row with the homogneous column, w
+     X(4,1) = 1;
      X = tempXY;
      Z(i,:) = X(1:3,1)';
      % X
@@ -196,8 +206,21 @@ for i=1:length(matches)
 	 xy__(i,:) = temp2(1,1:2);
 end
 % size(Z1)
-plot3(Z(:,1),Z(:,2),Z(:,3));
+errorXY = mean(sum((XY(:,:)-matches(:,1:2)).^2,2));
+errorxy__ = mean(sum((xy__(:,:)-matches(:,3:4)).^2,2));
+fprintf('Residual error for 2-D coordinates in First Image is : %0.3f \n', errorXY);
+fprintf('Residual error for 2-D coordinates in Second Image is : %0.3f \n', errorxy__);
+figure;
+clf;
+hold on;
+plot3(C1(:,1),C1(:,2),C1(:,3),'+m');
+plot3(C2(:,1),C2(:,2),C2(:,3),'+C');
+plot3(Z(:,1),Z(:,2),Z(:,3),'ob');
 axis equal
+title('3-D recontruction of the House along with two camera centers, in magenta and cyan');
+disp('Code paused, press escape to close all the open figures');
+pause;
+close all;
 % Z1 = P1*X;
 % Z2 = P2*X;
 
